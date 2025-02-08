@@ -1,21 +1,32 @@
-import { createContext, useState } from "react";
+import { apiRequest } from "@/lib/api";
+import { createContext, useCallback, useEffect, useState } from "react";
 const AccountContext = createContext({});
 
 const AccountProvider = ({ children }) => {
-  // need to authenticate the user first
-  let userData = null;
-  if (localStorage.getItem("jwt")) {
-    userData = {
-      name: localStorage.getItem("name"),
-      email: localStorage.getItem("email"),
-      username: localStorage.getItem("username"),
-      uid : localStorage.getItem("uid"),
-    };
-  }
-  const [user, setUser] = useState(userData);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("jwt") && !user) {
+      setLoading(true);
+      apiRequest({
+        url: "/api/v1/users/details",
+      })
+        .then((response) => {
+          setUser(response.data);
+        })
+        .catch((err) => {
+          console.log(err);
+          // window.location.href = '/signin'
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [user]);
 
   return (
-    <AccountContext.Provider value={{ user, setUser }}>
+    <AccountContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AccountContext.Provider>
   );

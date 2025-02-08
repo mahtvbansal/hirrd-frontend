@@ -1,7 +1,7 @@
 import { apiRequest } from "@/lib/api";
 
 // Fetch Companies
-export async function getCompanies(token) {
+export async function getCompanies() {
   try {
     const companies = await apiRequest({ url : '/api/v1/companies'})
     return companies.data;

@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import MDEditor from "@uiw/react-md-editor";
 import { useParams } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
 import { Briefcase, DoorClosed, DoorOpen, MapPinIcon } from "lucide-react";
 
 import {
@@ -17,36 +16,33 @@ import ApplicationCard from "@/components/application-card";
 
 import useFetch from "@/hooks/use-fetch";
 import { getSingleJob, updateHiringStatus } from "@/api/apiJobs";
+import { AccountContext } from "@/context/AccountContext";
 
 const JobPage = () => {
   const { id } = useParams();
-  const { isLoaded, user } = useUser();
+  const { loading, user } = useContext(AccountContext);
+  const { loading: loadingJob, data: job, fn: fnJob } = useFetch(getSingleJob);
+  const [isHiringOpen, setIsHiringOpen] = useState(job?.isOpen)
 
-  const {
-    loading: loadingJob,
-    data: job,
-    fn: fnJob,
-  } = useFetch(getSingleJob, {
-    job_id: id,
-  });
 
   useEffect(() => {
-    if (isLoaded) fnJob();
-  }, [isLoaded]);
+    fnJob(id);
+  }, []);
 
-  const { loading: loadingHiringStatus, fn: fnHiringStatus } = useFetch(
-    updateHiringStatus,
-    {
-      job_id: id,
-    }
-  );
+  useEffect(() => {
+    if (job) 
+      setIsHiringOpen(job?.isOpen)
+  }, [job]);
+
+  const { loading: loadingHiringStatus, fn: fnHiringStatus } =
+    useFetch(updateHiringStatus);
 
   const handleStatusChange = (value) => {
     const isOpen = value === "open";
-    fnHiringStatus(isOpen).then(() => fnJob());
+    fnHiringStatus({ isOpen, job_id: id }).then(() => setIsHiringOpen(prev => !prev));
   };
 
-  if (!isLoaded || loadingJob) {
+  if (loading || loadingJob) {
     return <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />;
   }
 
@@ -56,7 +52,11 @@ const JobPage = () => {
         <h1 className="gradient-title font-extrabold pb-3 text-4xl sm:text-6xl">
           {job?.title}
         </h1>
-        <img src={import.meta.env.VITE_BASE_URL + job?.company?.logo_url} className="h-12" alt={job?.title} />
+        <img
+          src={import.meta.env.VITE_BASE_URL + job?.company?.logo_url}
+          className="h-12"
+          alt={job?.title}
+        />
       </div>
 
       <div className="flex justify-between ">
@@ -64,10 +64,10 @@ const JobPage = () => {
           <MapPinIcon /> {job?.location}
         </div>
         <div className="flex gap-2">
-          <Briefcase /> {job?.applications?.length} Applicants
+          <Briefcase /> {job?.applicants} Applicants
         </div>
         <div className="flex gap-2">
-          {job?.isOpen ? (
+          {isHiringOpen ? (
             <>
               <DoorOpen /> Open
             </>
@@ -82,11 +82,11 @@ const JobPage = () => {
       {job?.recruiter_id === user?.id && (
         <Select onValueChange={handleStatusChange}>
           <SelectTrigger
-            className={`w-full ${job?.isOpen ? "bg-green-950" : "bg-red-950"}`}
+            className={`w-full ${isHiringOpen ? "bg-green-950" : "bg-red-950"}`}
           >
             <SelectValue
               placeholder={
-                "Hiring Status " + (job?.isOpen ? "( Open )" : "( Closed )")
+                "Hiring Status " + (isHiringOpen ? "( Open )" : "( Closed )")
               }
             />
           </SelectTrigger>
@@ -111,8 +111,8 @@ const JobPage = () => {
         <ApplyJobDrawer
           job={job}
           user={user}
-          fetchJob={fnJob}
-          applied={job?.applications?.find((ap) => ap.candidate_id === user.id)}
+          fetchJob={() => fnJob(job.id)}
+          applied={job?.hasApplied}
         />
       )}
       {loadingHiringStatus && <BarLoader width={"100%"} color="#36d7b7" />}

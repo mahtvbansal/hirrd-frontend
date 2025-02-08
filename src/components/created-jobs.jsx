@@ -5,14 +5,11 @@ import JobCard from "./job-card";
 import { useEffect } from "react";
 
 const CreatedJobs = () => {
-
   const {
     loading: loadingCreatedJobs,
     data: createdJobs,
     fn: fnCreatedJobs,
-  } = useFetch(getMyJobs, {
-    recruiter_id: localStorage.getItem('uid'),
-  });
+  } = useFetch(getMyJobs);
 
   useEffect(() => {
     fnCreatedJobs();
@@ -30,7 +27,11 @@ const CreatedJobs = () => {
                 <JobCard
                   key={job.id}
                   job={job}
-                  onJobAction={fnCreatedJobs}
+                  onJobAction={() =>
+                    fnCreatedJobs({
+                      recruiter_id: localStorage.getItem("uid"),
+                    })
+                  }
                   isMyJob
                 />
               );

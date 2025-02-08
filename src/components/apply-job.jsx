@@ -57,18 +57,19 @@ export function ApplyJobDrawer({ user, job, fetchJob, applied = false }) {
     fn: fnApply,
   } = useFetch(applyToJob);
 
-  const onSubmit = (data) => {
-    fnApply({
-      ...data,
-      job_id: job.id,
-      candidate_id: user.id,
-      name: user.fullName,
-      status: "applied",
-      resume: data.resume[0],
-    }).then(() => {
-      fetchJob();
-      reset();
-    });
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+    formData.append("candidate_id", user.id);
+    formData.append("candidate_name", user.name);
+    formData.append("education", data.education);
+    formData.append("experience", data.experience);
+    formData.append("job_id", job.id);
+    formData.append("resume", data.resume[0]);
+    formData.append("skills", data.skills);
+
+    await fnApply(formData)
+    await fetchJob();
+    reset();
   };
 
   return (

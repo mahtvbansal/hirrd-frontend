@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useContext, useEffect } from "react";

@@ -43,14 +43,18 @@ const UserAuthenticationDialog = () => {
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("uid", response.data.id);
 
-      setUser({
-        name: response.data.name,
-        email: response.data.email,
-        username: response.data.username,
-        uid: response.data.id
-      });
+      const userData = {...response.data}
+      delete userData.token;
+      delete userData.password;
+      setUser(userData);
       setOpen(false)
       if (!response.data.role) navigate("/onboarding");
+      else if (response.data.role === "candidate") {
+        navigate('/jobs')
+      }
+      else if (response.data.role === "recruiter") {
+        navigate('/post-job')
+      }
     } else {
       throw new Error("Token not available");
     }

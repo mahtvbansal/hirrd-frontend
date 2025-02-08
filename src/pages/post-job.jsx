@@ -13,12 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { AccountContext } from "@/context/AccountContext";
 import useFetch from "@/hooks/use-fetch";
-import { useUser } from "@clerk/clerk-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import MDEditor from "@uiw/react-md-editor";
 import { State } from "country-state-city";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { BarLoader } from "react-spinners";
@@ -33,9 +33,8 @@ const schema = z.object({
 });
 
 const PostJob = () => {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useContext(AccountContext);
   const navigate = useNavigate();
-
   const {
     register,
     handleSubmit,
@@ -51,14 +50,14 @@ const PostJob = () => {
     error: errorCreateJob,
     data: dataCreateJob,
     fn: fnCreateJob,
-  } = useFetch(addNewJob, {
-    ...data,
-    recruiter_id: user.id,
-    isOpen: true,
-  });
+  } = useFetch(addNewJob);
 
   const onSubmit = (data) => {
-    fnCreateJob();
+    fnCreateJob({
+      ...data,
+      recruiter_id: user.id,
+      isOpen: true,
+    });
   };
 
   useEffect(() => {
@@ -71,18 +70,19 @@ const PostJob = () => {
     fn: fnCompanies,
   } = useFetch(getCompanies);
 
-  useEffect(() => {
-    if (isLoaded) {
-      fnCompanies();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded]);
+  console.log(companies)
 
-  if (!isLoaded || loadingCompanies) {
+  useEffect(() => {
+      fnCompanies();
+  }, []);
+
+  if (loading || loadingCompanies) {
     return <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />;
   }
 
-  if (user?.unsafeMetadata?.role !== "recruiter") {
+  if (user && user?.role !== "recruiter") {
+    console.log(user)
+    console.log("hello");
     return <Navigate to="/jobs" />;
   }
 

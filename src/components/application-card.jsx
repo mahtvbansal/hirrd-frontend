@@ -21,20 +21,17 @@ import { BarLoader } from "react-spinners";
 const ApplicationCard = ({ application, isCandidate = false }) => {
   const handleDownload = () => {
     const link = document.createElement("a");
-    link.href = application?.resume;
+    link.href = import.meta.env.VITE_BASE_URL + application?.resume;
     link.target = "_blank";
     link.click();
   };
 
   const { loading: loadingHiringStatus, fn: fnHiringStatus } = useFetch(
-    updateApplicationStatus,
-    {
-      job_id: application.job_id,
-    }
+    updateApplicationStatus
   );
 
-  const handleStatusChange = (status) => {
-    fnHiringStatus(status).then(() => fnHiringStatus());
+  const handleStatusChange = async (status) => {
+    await fnHiringStatus({ application_id : application.application_id, status});
   };
 
   return (
@@ -44,7 +41,7 @@ const ApplicationCard = ({ application, isCandidate = false }) => {
         <CardTitle className="flex justify-between font-bold">
           {isCandidate
             ? `${application?.job?.title} at ${application?.job?.company?.name}`
-            : application?.name}
+            : application?.candidate_name}
           <Download
             size={18}
             className="bg-white text-black rounded-full h-8 w-8 p-1.5 cursor-pointer"
@@ -69,7 +66,7 @@ const ApplicationCard = ({ application, isCandidate = false }) => {
         <hr />
       </CardContent>
       <CardFooter className="flex justify-between">
-        <span>{new Date(application?.created_at).toLocaleString()}</span>
+        <span>{new Date(application?.createdAt).toLocaleString()}</span>
         {isCandidate ? (
           <span className="capitalize font-bold">
             Status: {application.status}

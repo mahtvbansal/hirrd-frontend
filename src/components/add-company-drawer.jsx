@@ -72,7 +72,7 @@ const AddCompanyDrawer = ({ fetchCompanies }) => {
         <DrawerHeader>
           <DrawerTitle>Add a New Company</DrawerTitle>
         </DrawerHeader>
-        <form action="/companies" method="post" enctype="multipart/form-data" className="flex gap-2 p-4 pb-0">
+        <form action="/companies" method="post" className="flex gap-2 p-4 pb-0">
           {/* Company Name */}
           <Input placeholder="Company name" {...register("name")} />
 

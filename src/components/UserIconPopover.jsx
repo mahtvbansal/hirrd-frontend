@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -10,10 +10,18 @@ import { useNavigate } from "react-router-dom";
 import { AccountContext } from "@/context/AccountContext";
 
 export function UserIconPopover() {
-  const navigate = useNavigate()
-  const {user} = useContext(AccountContext)
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(AccountContext);
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    setUser(null);
+    navigate("/");
+  };
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={() => setOpen((prev) => !prev)}>
       <PopoverTrigger asChild>
         <button className="rounded-full overflow-hidden w-10 h-10 border-none">
           <img
@@ -44,7 +52,23 @@ export function UserIconPopover() {
               "w-full justify-start text-sm py-2 pl-4",
               "hover:bg-zinc-700"
             )}
-            onClick={() => navigate('/my-jobs')}
+            onClick={() => {
+              setOpen((prev) => !prev);
+              navigate("/jobs");
+            }}
+          >
+            All Jobs
+          </Button>
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start text-sm py-2 pl-4",
+              "hover:bg-zinc-700"
+            )}
+            onClick={() => {
+              setOpen((prev) => !prev);
+              navigate("/my-jobs");
+            }}
           >
             My Jobs
           </Button>
@@ -54,7 +78,10 @@ export function UserIconPopover() {
               "w-full justify-start text-sm py-2 pl-4",
               "hover:bg-zinc-700"
             )}
-            onClick={() => navigate('/saved-jobs')}
+            onClick={() => {
+              setOpen((prev) => !prev);
+              navigate("/saved-jobs");
+            }}
           >
             Saved Jobs
           </Button>
@@ -74,6 +101,7 @@ export function UserIconPopover() {
               "w-full justify-start text-sm py-2 pl-4",
               "hover:bg-zinc-700"
             )}
+            onClick={handleSignOut}
           >
             Sign out
           </Button>

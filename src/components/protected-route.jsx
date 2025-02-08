@@ -1,26 +1,23 @@
 /* eslint-disable react/prop-types */
 import { Navigate, useLocation } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useContext } from "react";
+import { AccountContext } from "@/context/AccountContext";
 
 const ProtectedRoute = ({ children }) => {
-  // const { isSignedIn, isLoaded, user } = useUser();
-  // const { pathname } = useLocation();
+  const { pathname } = useLocation();
+  const { user } = useContext(AccountContext);
 
-  // if (isLoaded && !isSignedIn && isSignedIn !== undefined) {
-  //   return <Navigate to="/?sign-in=true" />;
-  // }
+  if (localStorage.getItem("jwt")) {
+    if (pathname !== "/onboarding" && user && !user.role)
+      return <Navigate to="/onboarding" />;
 
-  // if (
-  //   user !== undefined &&
-  //   !user?.unsafeMetadata?.role &&
-  //   pathname !== "/onboarding"
-  // )
-  //   return <Navigate to="/onboarding" />;
+    if (pathname === "/onboarding" && user?.role) {
+      return <Navigate to={user?.role === "recruiter" ? "/post-job" : "/jobs"} />;
+    }
 
-  if (localStorage.getItem('jwt')){
     return children;
   }
-  return <Navigate to="/" />
+  return <Navigate to="/" />;
 };
 
 export default ProtectedRoute;

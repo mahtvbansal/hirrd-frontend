@@ -19,21 +19,28 @@ export async function getJobs(options) {
 }
 
 // Read single job
-export async function getSingleJob({ job_id }) {
+export async function getSingleJob(job_id) {
   try {
     const response = await apiRequest({
       url: `/api/v1/jobs/${job_id}`,
     });
-    console.log(response);
     return response?.data;
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 }
 
 // Read Saved Jobs
 export async function getSavedJobs() {
-
+  try {
+    const savedJobs = await apiRequest({
+      url: "/api/v1/jobs/saved"
+    })
+    return savedJobs.data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
 }
 
 // - Add / Remove Saved Job
@@ -58,19 +65,25 @@ export async function saveJob({ job_id, alreadySaved }) {
 }
 
 // - job isOpen toggle 
-export async function updateHiringStatus({ job_id }, isOpen) {
-  const response = await apiRequest({
-    url: `/api/v1/jobs/${job_id}`,
-    method: "PATCH",
-    data: { isOpen },
-  });
+export async function updateHiringStatus({ job_id, isOpen }) {
+  try {
+    await apiRequest({
+      url: `/api/v1/jobs/${job_id}`,
+      method: "PATCH",
+      data: { isOpen },
+    });
+  
+  } catch (error) {
+    throw error
+  }
+
 }
 
 // get my created jobs
-export async function getMyJobs({ recruiter_id }) {
+export async function getMyJobs() {
   try {
     const response = await apiRequest({
-      url: `/api/v1/jobs/recruiter/${recruiter_id}`,
+      url: `/api/v1/jobs/recruiter`,
     });
     return response?.data;
   } catch (error) {

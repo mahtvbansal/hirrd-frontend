@@ -32,23 +32,27 @@ const JobListing = () => {
   const {
     loading: loadingJobs,
     data: jobs,
-    fn,
-  } = useFetch(getJobs, {
-    location,
-    company_id,
-    searchQuery,
-  });
+    fn : fnJobs,
+  } = useFetch(getJobs);
 
   useEffect(() => {
     fnCompanies();
   }, []);
 
   useEffect(() => {
-    fn();
+    fnJobs({
+      location,
+      company_id,
+      searchQuery,
+    });
   }, [location, company_id]);
 
   const handleSearch = (e) => {
-    fn()
+    fnJobs({
+      location,
+      company_id,
+      searchQuery,
+    })
   };
 
   const clearFilters = () => {
