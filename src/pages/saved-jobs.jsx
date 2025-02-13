@@ -30,6 +30,7 @@ const SavedJobs = () => {
         <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {savedJobs?.length ? (
             savedJobs?.map((saved) => {
+              if(saved?.job)
               return (
                 <JobCard
                   key={saved.id}

@@ -70,8 +70,6 @@ const PostJob = () => {
     fn: fnCompanies,
   } = useFetch(getCompanies);
 
-  console.log(companies)
-
   useEffect(() => {
       fnCompanies();
   }, []);
@@ -81,8 +79,6 @@ const PostJob = () => {
   }
 
   if (user && user?.role !== "recruiter") {
-    console.log(user)
-    console.log("hello");
     return <Navigate to="/jobs" />;
   }
 

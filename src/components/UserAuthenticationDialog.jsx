@@ -17,17 +17,37 @@ import { AccountContext } from "@/context/AccountContext";
 import { useNavigate } from "react-router-dom";
 import useFetch from "@/hooks/use-fetch";
 import { ClipLoader } from "react-spinners";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+
+const baseSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+const signupSchema = baseSchema.extend({
+  name: z.string().min(2, "Fullname must be at least 2 characters"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+});
+
+const loginSchema = baseSchema;
 
 const UserAuthenticationDialog = () => {
   const { user, setUser } = useContext(AccountContext);
   const [open, setOpen] = useState(false);
-  const [fullname, setFullname] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState("")
   const [stage, setStage] = useState("login");
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: { name: "", email: "", password: "", username: "" },
+    resolver: zodResolver(stage === "login" ? loginSchema : signupSchema),
+  });
 
   const handleOpenChange = (e) => {
     setStage("login");
@@ -36,59 +56,52 @@ const UserAuthenticationDialog = () => {
 
   const handleLogin = (response) => {
     if (response.data.token) {
-
       localStorage.setItem("jwt", response.data.token);
       localStorage.setItem("name", response.data.name);
       localStorage.setItem("email", response.data.email);
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("uid", response.data.id);
 
-      const userData = {...response.data}
+      const userData = { ...response.data };
       delete userData.token;
       delete userData.password;
       setUser(userData);
-      setOpen(false)
+      setOpen(false);
       if (!response.data.role) navigate("/onboarding");
       else if (response.data.role === "candidate") {
-        navigate('/jobs')
-      }
-      else if (response.data.role === "recruiter") {
-        navigate('/post-job')
+        navigate("/jobs");
+      } else if (response.data.role === "recruiter") {
+        navigate("/post-job");
       }
     } else {
       throw new Error("Token not available");
     }
-  }
+  };
 
-  const handleContinue = async () => {
+  const handleContinue = async (data) => {
     try {
       if (stage === "login") {
         const response = await apiRequest({
           url: "/api/v1/users/login",
-          method: 'POST',
-          data: {
-            email: email,
-            password: password,
-          },
+          method: "POST",
+          data: data,
         });
-        handleLogin(response)
+        handleLogin(response);
       } else if (stage === "signup") {
         const response = await apiRequest({
           url: "/api/v1/users/signup",
           method: "POST",
-          data: {
-            name: fullname,
-            username: username,
-            email: email,
-            password: password,
-          },
+          data: data,
         });
-        handleLogin(response)
+        handleLogin(response);
       }
-    } catch (error) {}
+    } catch (err) {
+      setError(err.message)
+      throw err;
+    }
   };
 
-  const { loading, fn } = useFetch(handleContinue)
+  const { loading, fn : fnHandleContinue } = useFetch(handleContinue);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -106,30 +119,29 @@ const UserAuthenticationDialog = () => {
               : "Welcome! Please fill in the details to get started."}
           </p>
         </DialogHeader>
-
-        <div className="space-y-5">
+        <form onSubmit={handleSubmit(fnHandleContinue)} className="space-y-5">
           {stage === "signup" && (
             <>
               <div>
                 <Label
-                  htmlFor="fullname"
+                  htmlFor="name"
                   className="block text-sm font-medium mb-1"
                 >
                   Full Name
                 </Label>
                 <Input
-                  type="fullname"
-                  id="fullname"
-                  value={fullname}
-                  onChange={(e) => setFullname(e.target.value)}
+                  id="name"
+                  {...register("name")}
                   className={cn(
                     "w-full rounded-lg border border-zinc-700 px-3 py-2 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
                     "placeholder:text-zinc-500",
-                    error && "border-red-500 focus:ring-red-500"
+                    errors.name && "border-red-500 focus:ring-red-500"
                   )}
                   placeholder="Enter your Full Name"
                 />
-                {/* {error && <p className="text-red-500 mt-1">{error}</p>} */}
+                {errors.name && (
+                  <p className="text-red-500 mt-1">{errors.name.message}</p>
+                )}
               </div>
               <div>
                 <Label
@@ -139,18 +151,20 @@ const UserAuthenticationDialog = () => {
                   Username
                 </Label>
                 <Input
-                  type="username"
                   id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  // value={username}
+                  // onChange={(e) => setUsername(e.target.value)}
+                  {...register("username")}
                   className={cn(
                     "w-full rounded-lg border border-zinc-700 px-3 py-2 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
                     "placeholder:text-zinc-500",
-                    error && "border-red-500 focus:ring-red-500"
+                    errors.username && "border-red-500 focus:ring-red-500"
                   )}
                   placeholder="Enter a unique username"
                 />
-                {/* {error && <p className="text-red-500 mt-1">{error}</p>} */}
+                {errors.username && (
+                  <p className="text-red-500 mt-1">{errors.username.message}</p>
+                )}
               </div>
             </>
           )}
@@ -161,16 +175,17 @@ const UserAuthenticationDialog = () => {
             <Input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              // value={email}
+              // onChange={(e) => setEmail(e.target.value)}
+              {...register("email")}
               className={cn(
                 "w-full rounded-lg border border-zinc-700 px-3 py-2 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
                 "placeholder:text-zinc-500",
-                error && "border-red-500 focus:ring-red-500"
+                errors.email && "border-red-500 focus:ring-red-500"
               )}
               placeholder="Enter your email address"
             />
-            {error && <p className="text-red-500 mt-1">{error}</p>}
+            {errors.email && <p className="text-red-500 mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
@@ -183,25 +198,30 @@ const UserAuthenticationDialog = () => {
             <Input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              {...register("password")}
+              // value={password}
+              // onChange={(e) => setPassword(e.target.value)}
               className={cn(
                 "w-full rounded-lg border border-zinc-700 px-3 py-2 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
                 "placeholder:text-zinc-500",
-                error && "border-red-500 focus:ring-red-500"
+                errors.password && "border-red-500 focus:ring-red-500"
               )}
               placeholder="Enter your password"
             />
-            {error && <p className="text-red-500 mt-1">{error}</p>}
+            {errors.password && (
+              <p className="text-red-500 mt-1">{errors.password.message}</p>
+            )}
           </div>
 
+          {error && <p className="text-red-500 text-center mt-1">{error}</p>}
+
           <Button
+            type="submit"
             className="w-full bg-yellow-400 text-zinc-900 hover:bg-yellow-500 font-medium rounded-lg py-3 px-4"
-            onClick={fn}
           >
-            {loading ? <ClipLoader size={16} loading={true} /> :"Continue"}
+            {loading ? <ClipLoader size={16} loading={true} /> : "Continue"}
           </Button>
-        </div>
+        </form>
 
         {stage === "login" ? (
           <p className="text-center text-[#FFFFFFA6] text-sm mt-8">

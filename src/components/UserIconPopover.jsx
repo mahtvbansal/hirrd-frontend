@@ -35,7 +35,7 @@ export function UserIconPopover() {
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-48 bg-[#403d76] text-white rounded-md border-none shadow-md py-2"
+        className="w-56 bg-[#403d76] text-white rounded-md border-none shadow-md py-2"
         side="bottom"
         align="end"
         sideOffset={8}
@@ -45,12 +45,12 @@ export function UserIconPopover() {
             <p className="font-medium">{user.username}</p>
             <p className="text-xs text-gray-400">{user.email}</p>
           </div>
-          <hr className="border-zinc-700 my-2" />
+          <hr className="border-[#5a5793] my-2" />
           <Button
             variant="ghost"
             className={cn(
               "w-full justify-start text-sm py-2 pl-4",
-              "hover:bg-zinc-700"
+              "hover:bg-[#5a5793]"
             )}
             onClick={() => {
               setOpen((prev) => !prev);
@@ -63,7 +63,7 @@ export function UserIconPopover() {
             variant="ghost"
             className={cn(
               "w-full justify-start text-sm py-2 pl-4",
-              "hover:bg-zinc-700"
+              "hover:bg-[#5a5793]"
             )}
             onClick={() => {
               setOpen((prev) => !prev);
@@ -76,7 +76,7 @@ export function UserIconPopover() {
             variant="ghost"
             className={cn(
               "w-full justify-start text-sm py-2 pl-4",
-              "hover:bg-zinc-700"
+              "hover:bg-[#5a5793]"
             )}
             onClick={() => {
               setOpen((prev) => !prev);
@@ -94,12 +94,12 @@ export function UserIconPopover() {
           >
             Manage Account
           </Button> */}
-          <hr className="border-zinc-700 my-2" />
+          <hr className="border-[#5a5793] my-2" />
           <Button
             variant="ghost"
             className={cn(
               "w-full justify-start text-sm py-2 pl-4",
-              "hover:bg-zinc-700"
+              "hover:bg-[#5a5793]"
             )}
             onClick={handleSignOut}
           >

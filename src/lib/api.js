@@ -27,10 +27,9 @@ export const apiRequest = async ({ url, method = "GET", data = null }) => {
     if (!response.ok) {
       const errorData = await response.json(); // Try to parse error response
       const errorMessage =
-        errorData.error || `Error: ${response.status} ${response.statusText}`; // Use error message from the server or default message
-      if (errorMessage.statusCode === 401) {
+        errorData.error?.explaination || `Error: ${response.status} ${response.statusText}`; // Use error message from the server or default message
+      if (errorData.error?.statusCode === 401) {
         localStorage.clear();
-        // window.location.href = '/login';
       }
       throw new Error(errorMessage); // Throw the error to be caught by the catch block
     }
@@ -38,6 +37,6 @@ export const apiRequest = async ({ url, method = "GET", data = null }) => {
     return await response.json();
   } catch (error) {
     console.error("API Request Error:", error);
-    // throw error; // Re-throw the error to be handled by the calling function
+    throw error;
   }
 };

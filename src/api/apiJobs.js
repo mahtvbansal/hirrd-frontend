@@ -94,7 +94,16 @@ export async function getMyJobs() {
 
 // Delete job
 export async function deleteJob({ job_id }) {
-
+  try {
+    const response = await apiRequest({
+      url: `/api/v1/jobs/${job_id}`,
+      method: "DELETE",
+    });
+    return response
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error Creating Job");
+  }
 }
 
 // - post job
